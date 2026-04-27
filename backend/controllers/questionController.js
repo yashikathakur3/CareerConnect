@@ -1,4 +1,4 @@
-const Question = require("../models/Question");
+const Question = require("../models/questionModel");
 
 function isValidLinkedInUrl(linkedin) {
   return /^https?:\/\/(www\.)?linkedin\.com\/.+/i.test(linkedin);

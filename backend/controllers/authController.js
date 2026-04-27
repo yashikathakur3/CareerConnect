@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const User = require("../models/userModel");
 
 function isValidEmail(email) {
   return /^\S+@\S+\.\S+$/.test(email);
