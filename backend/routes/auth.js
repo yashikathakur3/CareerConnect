@@ -3,9 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 
 router.post("/signup", async (req, res) => {
-
   try {
-
     const { fullName, email, password, role, year, company, jobRole } = req.body;
 
     const user = new User({
@@ -20,22 +18,18 @@ router.post("/signup", async (req, res) => {
 
     await user.save();
 
-    res.json({
+    res.status(201).json({
       success: true,
-      user: newUser
+      user
     });
-
   } catch (error) {
-
-    console.log(error);
+    console.log("Signup Error:", error);
 
     res.status(500).json({
       success: false,
       message: "Signup failed"
     });
-
   }
-
 });
 
 module.exports = router;
