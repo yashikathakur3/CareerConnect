@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import AboutUs from "./pages/AboutUs";
 import AlumniPage from "./pages/AlumniPage.jsx";
 import QuestionBank from "./pages/QuestionBank";
+import QuestionBankView from "./pages/QuestionBankView";  // ← new import
 import Login from "./components/Login";
 import Profile from "./pages/Profile";
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/alumni" element={<AlumniPage />} />
         <Route path="/questions" element={<QuestionBank />} />
+        <Route path="/view" element={<QuestionBankView />} />  {/* ← new route */}
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>

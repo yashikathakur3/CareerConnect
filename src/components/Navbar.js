@@ -27,6 +27,7 @@ Career Connect </Link> </div>
   <ul className="nav-links">
     <li><Link to="/">Home</Link></li>
     <li><Link to="/questions">Alumni Form</Link></li>
+    <li><Link to="/view">View Questions</Link></li>
     <li><Link to="/alumni">Alumni</Link></li>
     <li><Link to="/about">About Us</Link></li>
   </ul>
