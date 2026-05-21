@@ -1,233 +1,218 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../styles/AlumniPage.css";
 
-var alumniData = [
-  { id: 1,  name: "Mohit Thakur",       linkedin: "https://linkedin.com/in/yashika-thakur",     company: "Microsoft", role: "SDE-2",                batch: "2021", color: "#1a73e8" },
-  { id: 2,  name: "Rahul Sharma",       linkedin: "https://linkedin.com/in/rahul-sharma",       company: "Google",    role: "Software Engineer",    batch: "2020", color: "#34a853" },
-  { id: 3,  name: "Priya Mehta",        linkedin: "https://linkedin.com/in/priya-mehta",        company: "Amazon",    role: "SDE-1",                batch: "2022", color: "#ff6b35" },
-  { id: 4,  name: "Arjun Verma",        linkedin: "https://linkedin.com/in/arjun-verma",        company: "Infosys",   role: "Systems Engineer",     batch: "2019", color: "#6366f1" },
-  { id: 5,  name: "Sneha Kapoor",       linkedin: "https://linkedin.com/in/sneha-kapoor",       company: "TCS",       role: "Associate Consultant", batch: "2020", color: "#ec4899" },
-  { id: 6,  name: "Vikram Singh",       linkedin: "https://linkedin.com/in/vikram-singh",       company: "Wipro",     role: "Project Engineer",     batch: "2018", color: "#0ea5e9" },
-  { id: 7,  name: "Ananya Joshi",       linkedin: "https://linkedin.com/in/ananya-joshi",       company: "Flipkart",  role: "Product Analyst",      batch: "2021", color: "#f59e0b" },
-  { id: 8,  name: "Rohan Gupta",        linkedin: "https://linkedin.com/in/rohan-gupta",        company: "Zomato",    role: "Backend Engineer",     batch: "2022", color: "#ef4444" },
-  { id: 9,  name: "Kavya Reddy",        linkedin: "https://linkedin.com/in/kavya-reddy",        company: "Paytm",     role: "Data Analyst",         batch: "2020", color: "#8b5cf6" },
-  { id: 10, name: "Nikhil Bansal",      linkedin: "https://linkedin.com/in/nikhil-bansal",      company: "Razorpay",  role: "Frontend Engineer",    batch: "2021", color: "#14b8a6" },
-  { id: 11, name: "Divya Nair",         linkedin: "https://linkedin.com/in/divya-nair",         company: "BYJUS",     role: "Content Engineer",     batch: "2022", color: "#f97316" },
-  { id: 12, name: "Aditya Khanna",      linkedin: "https://linkedin.com/in/aditya-khanna",      company: "PhonePe",   role: "SDE-2",                batch: "2019", color: "#06b6d4" },
-  { id: 13, name: "Meera Pillai",       linkedin: "https://linkedin.com/in/meera-pillai",       company: "Swiggy",    role: "ML Engineer",          batch: "2021", color: "#10b981" },
-  { id: 14, name: "Siddharth Malhotra", linkedin: "https://linkedin.com/in/siddharth-malhotra", company: "Ola",       role: "Platform Engineer",    batch: "2020", color: "#3b82f6" },
-  { id: 15, name: "Pooja Agarwal",      linkedin: "https://linkedin.com/in/pooja-agarwal",      company: "HCL",       role: "Tech Lead",            batch: "2017", color: "#d946ef" },
-];
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const ACCENTS = ["blue", "green", "violet", "amber", "rose", "cyan"];
 
 function getInitials(name) {
-  var parts = name.split(" ");
-  var first = parts[0] ? parts[0][0] : "";
-  var second = parts[1] ? parts[1][0] : "";
-  return (first + second).toUpperCase();
-}
+  if (!name) return "?";
 
-function openLink(url) {
-  window.open(url, "_blank");
-}
-
-function AlumniRow(props) {
-  var alumni = props.alumni;
-  var index = props.index;
-  return (
-    <div className="ap-row" style={{ animationDelay: index * 0.04 + "s" }}>
-
-      <div className="ap-td ap-td-name">
-        <div className="ap-avatar" style={{ background: alumni.color }}>
-          {getInitials(alumni.name)}
-        </div>
-        <span>{alumni.name}</span>
-      </div>
-
-      <div className="ap-td">
-        <button
-          className="ap-linkedin-btn"
-          onClick={function() { openLink(alumni.linkedin); }}
-        >
-          LinkedIn
-        </button>
-      </div>
-
-      <div className="ap-td">
-        <span className="ap-company-name">{alumni.company}</span>
-      </div>
-
-      <div className="ap-td">
-        <span className="ap-role-badge">{alumni.role}</span>
-      </div>
-
-      <div className="ap-td">
-        <span className="ap-batch">{alumni.batch}</span>
-      </div>
-
-    </div>
-  );
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 }
 
 function AlumniPage() {
-  var searchState = useState("");
-  var search = searchState[0];
-  var setSearch = searchState[1];
+  const [alumni, setAlumni] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [company, setCompany] = useState("All");
+  const [role, setRole] = useState("All");
 
-  var companyState = useState("All");
-  var filterCompany = companyState[0];
-  var setFilterCompany = companyState[1];
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
-  var batchState = useState("All");
-  var filterBatch = batchState[0];
-  var setFilterBatch = batchState[1];
+    fetch(`${API_URL}/api/alumni`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        let data;
 
-  var companyList = ["All"];
-  alumniData.forEach(function(a) {
-    if (companyList.indexOf(a.company) === -1) {
-      companyList.push(a.company);
-    }
-  });
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(
+            "Backend returned HTML instead of JSON. Restart the backend server and make sure it is running on port 5000."
+          );
+        }
 
-  var batchList = ["All"];
-  alumniData.forEach(function(a) {
-    if (batchList.indexOf(a.batch) === -1) {
-      batchList.push(a.batch);
-    }
-  });
-  batchList.sort();
+        if (!res.ok) throw new Error(data.message || "Failed to load alumni");
+        return data;
+      })
+      .then((data) => {
+        setAlumni(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
-  var filtered = alumniData.filter(function(a) {
-    var q = search.toLowerCase();
-    var matchSearch =
-      a.name.toLowerCase().indexOf(q) !== -1 ||
-      a.company.toLowerCase().indexOf(q) !== -1 ||
-      a.role.toLowerCase().indexOf(q) !== -1;
-    var matchCompany = filterCompany === "All" || a.company === filterCompany;
-    var matchBatch = filterBatch === "All" || a.batch === filterBatch;
-    return matchSearch && matchCompany && matchBatch;
-  });
+  const companies = useMemo(() => {
+    return ["All", ...new Set(alumni.map((item) => item.company).filter(Boolean))].sort();
+  }, [alumni]);
+
+  const roles = useMemo(() => {
+    return ["All", ...new Set(alumni.map((item) => item.jobRole).filter(Boolean))].sort();
+  }, [alumni]);
+
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return alumni.filter((item) => {
+      const matchesSearch =
+        !query ||
+        item.fullName?.toLowerCase().includes(query) ||
+        item.company?.toLowerCase().includes(query) ||
+        item.jobRole?.toLowerCase().includes(query) ||
+        item.email?.toLowerCase().includes(query);
+      const matchesCompany = company === "All" || item.company === company;
+      const matchesRole = role === "All" || item.jobRole === role;
+
+      return matchesSearch && matchesCompany && matchesRole;
+    });
+  }, [alumni, company, role, search]);
+
+  const totalQuestions = alumni.reduce((sum, item) => sum + item.questionCount, 0);
+  const activeContributors = alumni.filter((item) => item.contributionCount > 0).length;
 
   return (
-    <div className="ap-root">
-
-      {/* <nav className="ap-nav">
-        <div className="ap-nav-brand">
-          <div className="ap-nav-icon">CC</div>
-          <h2>Career<span>Connect</span></h2>
-        </div>
-        <ul className="ap-nav-links">
-          <li><span className="ap-nav-link">Home</span></li>
-          <li><span className="ap-nav-link">About</span></li>
-          <li><span className="ap-nav-link active">Alumni</span></li>
-          <li><span className="ap-nav-link">Events</span></li>
-        </ul>
-        <button className="ap-nav-btn">Get Started</button>
-      </nav> */}
-
-      <div className="ap-page">
-
-        <div className="ap-header">
-          <div className="ap-header-top">
-            <div className="ap-header-left">
-              <span className="ap-eyebrow">Our Network</span>
-              <h1>Alumni <span>Directory</span></h1>
-              <p className="ap-header-sub">
-                Connect with graduates from our college working at top companies.
-                Click LinkedIn to reach out directly.
-              </p>
-            </div>
-            <div className="ap-stats">
-              <div className="ap-stat-pill">
-                <span className="ap-stat-num">{alumniData.length}</span>
-                <span className="ap-stat-label">Alumni</span>
-              </div>
-              <div className="ap-stat-pill">
-                <span className="ap-stat-num">{companyList.length - 1}</span>
-                <span className="ap-stat-label">Companies</span>
-              </div>
-              <div className="ap-stat-pill">
-                <span className="ap-stat-num">{batchList.length - 1}</span>
-                <span className="ap-stat-label">Batches</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="ap-controls">
-            <input
-              className="ap-search"
-              type="text"
-              placeholder="Search by name, company or role..."
-              value={search}
-              onChange={function(e) { setSearch(e.target.value); }}
-            />
-            <select
-              className="ap-filter-select"
-              value={filterCompany}
-              onChange={function(e) { setFilterCompany(e.target.value); }}
-            >
-              {companyList.map(function(c) {
-                return (
-                  <option key={c} value={c}>
-                    {c === "All" ? "All Companies" : c}
-                  </option>
-                );
-              })}
-            </select>
-            <select
-              className="ap-filter-select"
-              value={filterBatch}
-              onChange={function(e) { setFilterBatch(e.target.value); }}
-            >
-              {batchList.map(function(b) {
-                return (
-                  <option key={b} value={b}>
-                    {b === "All" ? "All Batches" : "Batch " + b}
-                  </option>
-                );
-              })}
-            </select>
-            <span className="ap-results-count">
-              <strong>{filtered.length}</strong> of {alumniData.length} shown
-            </span>
-          </div>
+    <div className="ap-page">
+      <section className="ap-hero">
+        <div>
+          <span className="ap-eyebrow">Alumni Network</span>
+          <h1>Find Seniors Who Have Been There</h1>
+          <p>
+            Explore alumni by company and role, then use their shared interview
+            experiences to prepare with better context.
+          </p>
         </div>
 
-        <div className="ap-table-card">
-
-          <div className="ap-table-head">
-            <div className="ap-th">Name</div>
-            <div className="ap-th">LinkedIn</div>
-            <div className="ap-th">Company</div>
-            <div className="ap-th">Role</div>
-            <div className="ap-th">Batch</div>
+        <div className="ap-stats">
+          <div>
+            <strong>{alumni.length}</strong>
+            <span>Alumni</span>
           </div>
-
-          <div className="ap-table-body">
-            {filtered.length === 0 ? (
-              <div className="ap-empty">
-                <h3>No alumni found</h3>
-                <p>Try changing your search or filters</p>
-              </div>
-            ) : (
-              filtered.map(function(alumni, index) {
-                return (
-                  <AlumniRow
-                    key={alumni.id}
-                    alumni={alumni}
-                    index={index}
-                  />
-                );
-              })
-            )}
+          <div>
+            <strong>{activeContributors}</strong>
+            <span>Contributors</span>
           </div>
-
+          <div>
+            <strong>{totalQuestions}</strong>
+            <span>Questions</span>
+          </div>
         </div>
+      </section>
 
-        <p className="ap-footer">
-          Verified alumni from our college network
-        </p>
+      <section className="ap-toolbar">
+        <input
+          className="ap-search"
+          type="text"
+          placeholder="Search by name, company, role, or email..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
 
-      </div>
+        <select
+          className="ap-filter-select"
+          value={company}
+          onChange={(event) => setCompany(event.target.value)}
+        >
+          {companies.map((item) => (
+            <option key={item} value={item}>
+              {item === "All" ? "All companies" : item}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="ap-filter-select"
+          value={role}
+          onChange={(event) => setRole(event.target.value)}
+        >
+          {roles.map((item) => (
+            <option key={item} value={item}>
+              {item === "All" ? "All roles" : item}
+            </option>
+          ))}
+        </select>
+
+        <span className="ap-results">
+          {filtered.length} of {alumni.length} shown
+        </span>
+      </section>
+
+      {loading && (
+        <div className="ap-state">
+          <div className="ap-spinner" />
+          <p>Loading alumni directory...</p>
+        </div>
+      )}
+
+      {error && <div className="ap-error">{error}</div>}
+
+      {!loading && !error && filtered.length === 0 && (
+        <div className="ap-empty">
+          <h2>No alumni found</h2>
+          <p>Try a different search, company, or role filter.</p>
+        </div>
+      )}
+
+      {!loading && !error && filtered.length > 0 && (
+        <section className="ap-grid">
+          {filtered.map((item, index) => (
+            <article className={`ap-card ${ACCENTS[index % ACCENTS.length]}`} key={item.id}>
+              <div className="ap-card-top">
+                <div className="ap-avatar">{getInitials(item.fullName)}</div>
+                <div>
+                  <h2>{item.fullName}</h2>
+                  <p>{item.email}</p>
+                </div>
+              </div>
+
+              <div className="ap-role-row">
+                <span>{item.jobRole || "Role not set"}</span>
+                <span>{item.company || "Company not set"}</span>
+              </div>
+
+              <div className="ap-meta-grid">
+                <div>
+                  <strong>{item.year || "N/A"}</strong>
+                  <span>Batch</span>
+                </div>
+                <div>
+                  <strong>{item.contributionCount}</strong>
+                  <span>Experiences</span>
+                </div>
+                <div>
+                  <strong>{item.questionCount}</strong>
+                  <span>Questions</span>
+                </div>
+              </div>
+
+              <div className="ap-card-foot">
+                <div>
+                  <span>Shared roles</span>
+                  <strong>
+                    {item.rolesContributed.length
+                      ? item.rolesContributed.slice(0, 2).join(", ")
+                      : "No submissions yet"}
+                  </strong>
+                </div>
+                <a href={item.linkedin} target="_blank" rel="noreferrer">
+                  LinkedIn
+                </a>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
     </div>
   );
 }

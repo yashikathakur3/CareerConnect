@@ -110,6 +110,64 @@ app.get("/api/submissions", authenticate, async (req, res) => {
   }
 });
 
+app.get("/api/alumni", authenticate, async (req, res) => {
+  try {
+    const alumni = await User.find({ role: "alumni" })
+      .select("fullName email year company jobRole")
+      .sort({ fullName: 1 });
+
+    const submissions = await Submission.find({
+      submittedBy: { $in: alumni.map((user) => user._id) },
+    }).select("submittedBy company jobRole questions");
+
+    const statsByUser = new Map();
+
+    submissions.forEach((submission) => {
+      const key = submission.submittedBy.toString();
+      const current = statsByUser.get(key) || {
+        experiences: 0,
+        questions: 0,
+        companies: new Set(),
+        roles: new Set(),
+      };
+
+      current.experiences += 1;
+      current.questions += submission.questions.length;
+      if (submission.company) current.companies.add(submission.company);
+      if (submission.jobRole) current.roles.add(submission.jobRole);
+
+      statsByUser.set(key, current);
+    });
+
+    res.json(
+      alumni.map((user) => {
+        const stats = statsByUser.get(user._id.toString()) || {
+          experiences: 0,
+          questions: 0,
+          companies: new Set(),
+          roles: new Set(),
+        };
+
+        return {
+          id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          year: user.year,
+          company: user.company,
+          jobRole: user.jobRole,
+          linkedin: `https://linkedin.com/search/results/people/?keywords=${encodeURIComponent(user.fullName)}`,
+          contributionCount: stats.experiences,
+          questionCount: stats.questions,
+          companiesContributed: Array.from(stats.companies),
+          rolesContributed: Array.from(stats.roles),
+        };
+      })
+    );
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
