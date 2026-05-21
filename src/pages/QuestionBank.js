@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./QuestionBank.css";
+import JOB_ROLES from "../constants/jobRoles";
 
 const STEPS = [
   { tag: "Step 1 of 4", num: 1 },
@@ -18,6 +19,7 @@ export default function QuestionBank() {
   const [linkedin, setLinkedin] = useState("");
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
+  const [jobRole, setJobRole] = useState("");
   const [questions, setQuestions] = useState(["", "", "", "", ""]);
   const [additionalInfo, setAdditionalInfo] = useState(["", "", ""]);
 
@@ -38,6 +40,7 @@ export default function QuestionBank() {
     }
     if (step === 2) {
       if (!company.trim()) { alert("Please enter the company name 🏢"); return false; }
+      if (!jobRole) { alert("Please select the job role"); return false; }
       if (questions.some(q => !q.trim())) { alert("Please fill in all interview questions ❓"); return false; }
       if (additionalInfo.some(a => !a.trim())) { alert("Please fill in all additional info fields 📝"); return false; }
     }
@@ -59,7 +62,7 @@ export default function QuestionBank() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ name, linkedin, email, company, questions, additionalInfo }),
+          body: JSON.stringify({ name, linkedin, email, company, jobRole, questions, additionalInfo }),
         });
 
         const data = await res.json();
@@ -80,7 +83,7 @@ export default function QuestionBank() {
 
   const handleReset = () => {
     setStep(0); setDir("fwd"); setSubmitted(false);
-    setName(""); setLinkedin(""); setEmail(""); setCompany("");
+    setName(""); setLinkedin(""); setEmail(""); setCompany(""); setJobRole("");
     setQuestions(["", "", "", "", ""]);
     setAdditionalInfo(["", "", ""]);
   };
@@ -126,6 +129,10 @@ export default function QuestionBank() {
               <div className="qb-stat">
                 <span>🏢</span>
                 {company}
+              </div>
+              <div className="qb-stat">
+                <span>Role</span>
+                {jobRole}
               </div>
             </div>
             <button className="qb-restart-btn" onClick={handleReset}>
@@ -199,6 +206,20 @@ export default function QuestionBank() {
                   <input className="qb-input-plain" type="text" placeholder="e.g. Google, Microsoft, Infosys..." value={company} onChange={e => setCompany(e.target.value)} autoFocus />
 
                   <div className="qb-section-label">
+                    <span className="qb-section-title">Job Role</span>
+                  </div>
+                  <select
+                    className="qb-input-plain qb-select"
+                    value={jobRole}
+                    onChange={e => setJobRole(e.target.value)}
+                  >
+                    <option value="">Select job role</option>
+                    {JOB_ROLES.map((role) => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+
+                  <div className="qb-section-label">
                     <span className="qb-section-title">❓ Interview Questions</span>
                     <span className="qb-count-pill blue">{questions.length} / min 5</span>
                   </div>
@@ -236,6 +257,7 @@ export default function QuestionBank() {
                     { icon: "👤", label: "Name", value: name },
                     { icon: "🔗", label: "LinkedIn", value: linkedin },
                     { icon: "🏢", label: "Company", value: company },
+                    { icon: "Role", label: "Job Role", value: jobRole },
                     { icon: "❓", label: "Questions", value: `${questions.length} questions added` },
                     { icon: "📝", label: "Tips", value: `${additionalInfo.length} additional info added` },
                   ].map(({ icon, label, value }, i) => (

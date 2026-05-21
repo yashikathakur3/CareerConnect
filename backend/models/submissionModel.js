@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const JOB_ROLES = require("../constants/jobRoles");
 
 const submissionSchema = new mongoose.Schema({
   name: {
@@ -17,6 +18,12 @@ const submissionSchema = new mongoose.Schema({
 
   company: {
     type: String,
+    required: true,
+  },
+
+  jobRole: {
+    type: String,
+    enum: JOB_ROLES,
     required: true,
   },
 

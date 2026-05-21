@@ -508,6 +508,16 @@ body {
 
 .qb-input-plain::placeholder { color: var(--text-faint); font-weight: 500; }
 
+.qb-select {
+  appearance: none;
+  cursor: pointer;
+  color: var(--text-mid);
+}
+
+.qb-select:valid {
+  color: var(--text-dark);
+}
+
 /* ── Footer ── */
 .qb-footer {
   display: flex;

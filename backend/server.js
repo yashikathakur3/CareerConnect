@@ -67,8 +67,30 @@ app.get("/api/me", authenticate, (req, res) => {
 
 app.post("/api/submissions", authenticate, requireRole("alumni"), async (req, res) => {
   try {
+    const { name, linkedin, company, jobRole, questions, additionalInfo } = req.body;
+    const validQuestions = Array.isArray(questions)
+      ? questions.map((question) => question.trim()).filter(Boolean)
+      : [];
+    const validAdditionalInfo = Array.isArray(additionalInfo)
+      ? additionalInfo.map((info) => info.trim()).filter(Boolean)
+      : [];
+
+    if (!name || !linkedin || !company || !jobRole) {
+      return res.status(400).json({
+        message: "Name, LinkedIn URL, company, and job role are required",
+      });
+    }
+
+    if (validQuestions.length < 5 || validAdditionalInfo.length < 3) {
+      return res.status(400).json({
+        message: "At least 5 questions and 3 tips are required",
+      });
+    }
+
     const submission = new Submission({
       ...req.body,
+      questions: validQuestions,
+      additionalInfo: validAdditionalInfo,
       submittedBy: req.user._id,
     });
 

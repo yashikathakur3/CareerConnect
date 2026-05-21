@@ -54,9 +54,14 @@ function Navbar() {
               {getInitials(user.fullName)}
             </button>
 
-            <span className="user-name">
-              {user.fullName?.split(" ")[0]} ({user.role})
-            </span>
+            <button
+              className="user-identity"
+              onClick={() => navigate("/profile")}
+              type="button"
+            >
+              <span className="user-name">{user.fullName?.split(" ")[0]}</span>
+              <span className={`user-role ${user.role}`}>{user.role}</span>
+            </button>
 
             <button className="logout-btn" onClick={handleLogout} type="button">
               Logout
