@@ -1,296 +1,305 @@
-// // import { useState, useEffect } from "react";
-// // import "./QuestionBankView.css";
-
-// // export default function QuestionBankView() {
-// //   const [submissions, setSubmissions] = useState([]);
-// //   const [loading, setLoading] = useState(true);
-// //   const [error, setError] = useState(null);
-// //   const [search, setSearch] = useState("");
-// //   const [selected, setSelected] = useState(null);
-
-// //   useEffect(() => {
-// //     fetch(`${import.meta.env.VITE_API_URL}/api/submissions`)
-// //       .then((res) => res.json())
-// //       .then((data) => { setSubmissions(data); setLoading(false); })
-// //       .catch(() => { setError("Failed to load data"); setLoading(false); });
-// //   }, []);
-
-// //   const filtered = submissions.filter((s) =>
-// //     s.company.toLowerCase().includes(search.toLowerCase()) ||
-// //     s.name.toLowerCase().includes(search.toLowerCase())
-// //   );
-
-// //   const formatDate = (d) =>
-// //     new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-
-// //   return (
-// //     <div className="qbv-page">
-// //       {/* Header */}
-// //       <div className="qbv-header">
-// //         <span className="qbv-emoji">📚</span>
-// //         <h1>Question Bank</h1>
-// //         <p>Real interview questions shared by seniors · Prepare smarter</p>
-
-// //         <div className="qbv-search-wrap">
-// //           <span className="qbv-search-icon">🔍</span>
-// //           <input
-// //             className="qbv-search"
-// //             placeholder="Search by company or name..."
-// //             value={search}
-// //             onChange={(e) => setSearch(e.target.value)}
-// //           />
-// //         </div>
-
-// //         <div className="qbv-stats">
-// //           <div className="qbv-stat-pill">🏢 {submissions.length} Submissions</div>
-// //           <div className="qbv-stat-pill">
-// //             ❓ {submissions.reduce((a, s) => a + s.questions.length, 0)} Questions
-// //           </div>
-// //         </div>
-// //       </div>
-
-// //       {/* Content */}
-// //       {loading && (
-// //         <div className="qbv-loading">
-// //           <div className="qbv-spinner" />
-// //           <p>Loading submissions...</p>
-// //         </div>
-// //       )}
-
-// //       {error && <div className="qbv-error">⚠️ {error}</div>}
-
-// //       {!loading && !error && filtered.length === 0 && (
-// //         <div className="qbv-empty">
-// //           <span>🔎</span>
-// //           <p>No results found for "{search}"</p>
-// //         </div>
-// //       )}
-
-// //       {/* Cards Grid */}
-// //       {!loading && !error && (
-// //         <div className="qbv-grid">
-// //           {filtered.map((s) => (
-// //             <div
-// //               key={s._id}
-// //               className="qbv-card"
-// //               onClick={() => setSelected(s)}
-// //             >
-// //               <div className="qbv-card-top">
-// //                 <div className="qbv-company-badge">🏢 {s.company}</div>
-// //                 <div className="qbv-date">{formatDate(s.createdAt)}</div>
-// //               </div>
-
-// //               <div className="qbv-card-author">
-// //                 <div className="qbv-avatar">
-// //                   {s.name.trim()[0].toUpperCase()}
-// //                 </div>
-// //                 <div>
-// //                   <div className="qbv-author-name">{s.name}</div>
-// //                   <a
-// //                     href={s.linkedin}
-// //                     target="_blank"
-// //                     rel="noreferrer"
-// //                     className="qbv-linkedin"
-// //                     onClick={(e) => e.stopPropagation()}
-// //                   >
-// //                     🔗 LinkedIn
-// //                   </a>
-// //                 </div>
-// //               </div>
-
-// //               {/* Preview of questions */}
-// //               <div className="qbv-questions-preview">
-// //                 {s.questions.slice(0, 3).map((q, i) => (
-// //                   <div key={i} className="qbv-q-preview">
-// //                     <span className="qbv-q-num">{i + 1}</span>
-// //                     <span>{q}</span>
-// //                   </div>
-// //                 ))}
-// //                 {s.questions.length > 3 && (
-// //                   <div className="qbv-more">+{s.questions.length - 3} more questions</div>
-// //                 )}
-// //               </div>
-
-// //               <div className="qbv-card-footer">
-// //                 <span className="qbv-pill blue">❓ {s.questions.length} Questions</span>
-// //                 <span className="qbv-pill indigo">📝 {s.additionalInfo.length} Tips</span>
-// //                 <span className="qbv-view-btn">View All →</span>
-// //               </div>
-// //             </div>
-// //           ))}
-// //         </div>
-// //       )}
-
-// //       {/* Modal */}
-// //       {selected && (
-// //         <div className="qbv-modal-overlay" onClick={() => setSelected(null)}>
-// //           <div className="qbv-modal" onClick={(e) => e.stopPropagation()}>
-// //             <button className="qbv-modal-close" onClick={() => setSelected(null)}>✕</button>
-
-// //             <div className="qbv-modal-header">
-// //               <div className="qbv-modal-company">🏢 {selected.company}</div>
-// //               <div className="qbv-modal-meta">
-// //                 <div className="qbv-avatar large">{selected.name.trim()[0].toUpperCase()}</div>
-// //                 <div>
-// //                   <div className="qbv-author-name">{selected.name}</div>
-// //                   <a href={selected.linkedin} target="_blank" rel="noreferrer" className="qbv-linkedin">
-// //                     🔗 View LinkedIn
-// //                   </a>
-// //                 </div>
-// //               </div>
-// //             </div>
-
-// //             <div className="qbv-modal-body">
-// //               {/* Questions */}
-// //               <div className="qbv-modal-section">
-// //                 <div className="qbv-modal-section-title blue">
-// //                   ❓ Interview Questions
-// //                   <span className="qbv-count-pill blue">{selected.questions.length}</span>
-// //                 </div>
-// //                 <div className="qbv-modal-list">
-// //                   {selected.questions.map((q, i) => (
-// //                     <div key={i} className="qbv-modal-item">
-// //                       <span className="qbv-row-num blue">{i + 1}</span>
-// //                       <span>{q}</span>
-// //                     </div>
-// //                   ))}
-// //                 </div>
-// //               </div>
-
-// //               {/* Tips */}
-// //               <div className="qbv-modal-section">
-// //                 <div className="qbv-modal-section-title indigo">
-// //                   📝 Tips & Additional Info
-// //                   <span className="qbv-count-pill indigo">{selected.additionalInfo.length}</span>
-// //                 </div>
-// //                 <div className="qbv-modal-list">
-// //                   {selected.additionalInfo.map((a, i) => (
-// //                     <div key={i} className="qbv-modal-item">
-// //                       <span className="qbv-row-num indigo">{i + 1}</span>
-// //                       <span>{a}</span>
-// //                     </div>
-// //                   ))}
-// //                 </div>
-// //               </div>
-// //             </div>
-// //           </div>
-// //         </div>
-// //       )}
-
-// //       <p className="qbv-footer">Contributed by seniors · Built for juniors 💙</p>
-// //     </div>
-// //   );
-// // }
-
-
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./QuestionBankView.css";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+function formatDate(date) {
+  if (!date) return "Recently";
+
+  return new Date(date).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function getInitials(name) {
+  if (!name) return "?";
+
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 export default function QuestionBankView() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/submissions")
-      .then((res) => res.json())
-      .then((data) => { setSubmissions(data); setLoading(false); })
-      .catch(() => { setError("Failed to load data"); setLoading(false); });
+    const token = localStorage.getItem("token");
+
+    fetch(`${API_URL}/api/submissions`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to load data");
+        return data;
+      })
+      .then((data) => {
+        setSubmissions(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
-  // All questions flat with company tag
-  const allQuestions = submissions.flatMap((s) =>
-    s.questions.map((q) => ({ question: q, company: s.company.trim() }))
+  const companyGroups = useMemo(() => {
+    const groups = new Map();
+
+    submissions.forEach((submission) => {
+      const company = submission.company?.trim() || "Unknown Company";
+      const existing = groups.get(company) || {
+        company,
+        experiences: [],
+        questions: [],
+        tips: [],
+        alumni: new Set(),
+      };
+
+      existing.experiences.push(submission);
+      existing.questions.push(...(submission.questions || []));
+      existing.tips.push(...(submission.additionalInfo || []));
+      if (submission.name) existing.alumni.add(submission.name);
+
+      groups.set(company, existing);
+    });
+
+    return Array.from(groups.values())
+      .map((group) => ({
+        ...group,
+        alumniCount: group.alumni.size,
+      }))
+      .sort((a, b) => b.experiences.length - a.experiences.length);
+  }, [submissions]);
+
+  const filteredCompanies = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return companyGroups;
+
+    return companyGroups.filter((group) => {
+      const matchesCompany = group.company.toLowerCase().includes(query);
+      const matchesAlumni = group.experiences.some((experience) =>
+        experience.name?.toLowerCase().includes(query)
+      );
+      const matchesQuestion = group.questions.some((question) =>
+        question.toLowerCase().includes(query)
+      );
+
+      return matchesCompany || matchesAlumni || matchesQuestion;
+    });
+  }, [companyGroups, search]);
+
+  const totalQuestions = companyGroups.reduce(
+    (sum, company) => sum + company.questions.length,
+    0
   );
 
-  // ✅ Remove duplicate questions (same text + same company)
-  const seen = new Set();
-  const uniqueQuestions = allQuestions.filter((item) => {
-    const key = `${item.company.toLowerCase()}||${item.question.toLowerCase().trim()}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  // Filter by company if search is active
-  const filtered = search.trim()
-    ? uniqueQuestions.filter((q) =>
-      q.company.toLowerCase().includes(search.trim().toLowerCase())
-    )
-    : uniqueQuestions;
+  const totalTips = companyGroups.reduce(
+    (sum, company) => sum + company.tips.length,
+    0
+  );
 
   return (
     <div className="qbv-page">
-      {/* Header */}
       <div className="qbv-header">
-        <span className="qbv-emoji">📚</span>
-        <h1>Question Bank</h1>
-        <p>Type a company name to see all interview questions asked there</p>
+        <span className="qbv-eyebrow">Question Bank</span>
+        <h1>Explore Interview Experiences by Company</h1>
+        <p>
+          Browse real questions, alumni context, and preparation tips shared by seniors.
+        </p>
 
         <div className="qbv-search-wrap">
-          <span className="qbv-search-icon">🔍</span>
+          <span className="qbv-search-icon">Search</span>
           <input
             className="qbv-search"
-            placeholder="e.g. Zomato, Google, Flipkart..."
+            placeholder="Search company, question, or alumni..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           {search && (
-            <button className="qbv-clear-btn" onClick={() => setSearch("")}>✕</button>
+            <button
+              className="qbv-clear-btn"
+              onClick={() => setSearch("")}
+              type="button"
+            >
+              Clear
+            </button>
           )}
         </div>
 
-        {/* Stats bar */}
         {!loading && !error && (
           <div className="qbv-stats">
-            <span className="qbv-stat-pill">
-              📋 {filtered.length} Question{filtered.length !== 1 ? "s" : ""}
-            </span>
-            {search && (
-              <span className="qbv-stat-pill active">
-                🏢 {search}
-              </span>
-            )}
+            <span className="qbv-stat-pill">{companyGroups.length} Companies</span>
+            <span className="qbv-stat-pill">{submissions.length} Experiences</span>
+            <span className="qbv-stat-pill">{totalQuestions} Questions</span>
+            <span className="qbv-stat-pill">{totalTips} Tips</span>
           </div>
         )}
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="qbv-loading">
           <div className="qbv-spinner" />
-          <p>Loading questions...</p>
+          <p>Loading interview experiences...</p>
         </div>
       )}
 
-      {/* Error */}
-      {error && <div className="qbv-error">⚠️ {error}</div>}
+      {error && <div className="qbv-error">{error}</div>}
 
-      {/* No results */}
-      {!loading && !error && filtered.length === 0 && (
+      {!loading && !error && filteredCompanies.length === 0 && (
         <div className="qbv-empty">
-          <span>🔎</span>
-          <p>No questions found for <strong>"{search}"</strong></p>
-          <button className="qbv-reset-btn" onClick={() => setSearch("")}>
-            Show all questions
+          <h2>No matching experiences found</h2>
+          <p>Try searching for another company, question, or alumni name.</p>
+          <button className="qbv-reset-btn" onClick={() => setSearch("")} type="button">
+            Show all companies
           </button>
         </div>
       )}
 
-      {/* Questions */}
-      {!loading && !error && filtered.length > 0 && (
-        <div className="qbv-content">
-          {filtered.map((item, i) => (
-            <div key={i} className="qbv-question-item">
-              <span className="qbv-q-num">{i + 1}</span>
-              <span className="qbv-q-text">{item.question}</span>
-            </div>
-          ))}
+      {!loading && !error && filteredCompanies.length > 0 && (
+        <div className="qbv-grid">
+          {filteredCompanies.map((group) => {
+            const latest = group.experiences[0];
+            const previewQuestions = group.questions.slice(0, 3);
+            const previewTip = group.tips[0];
+
+            return (
+              <article className="qbv-company-card" key={group.company}>
+                <div className="qbv-card-head">
+                  <div>
+                    <span className="qbv-card-label">Company</span>
+                    <h2>{group.company}</h2>
+                  </div>
+                  <div className="qbv-company-mark">
+                    {group.company.slice(0, 2).toUpperCase()}
+                  </div>
+                </div>
+
+                <div className="qbv-card-meta">
+                  <span>{group.experiences.length} experience{group.experiences.length !== 1 ? "s" : ""}</span>
+                  <span>{group.questions.length} questions</span>
+                  <span>{group.alumniCount} alumni</span>
+                </div>
+
+                <div className="qbv-author-strip">
+                  <div className="qbv-avatar">{getInitials(latest?.name)}</div>
+                  <div>
+                    <p>Latest shared by</p>
+                    <strong>{latest?.name}</strong>
+                  </div>
+                  <span>{formatDate(latest?.createdAt)}</span>
+                </div>
+
+                <div className="qbv-preview-list">
+                  {previewQuestions.map((question, index) => (
+                    <div className="qbv-preview-question" key={`${group.company}-${index}`}>
+                      <span>{index + 1}</span>
+                      <p>{question}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {previewTip && (
+                  <div className="qbv-tip-preview">
+                    <span>Alumni tip</span>
+                    <p>{previewTip}</p>
+                  </div>
+                )}
+
+                <button
+                  className="qbv-view-btn"
+                  onClick={() => setSelectedCompany(group)}
+                  type="button"
+                >
+                  View full experience
+                </button>
+              </article>
+            );
+          })}
         </div>
       )}
 
-      <p className="qbv-footer">Contributed by seniors · Built for juniors 💙</p>
+      {selectedCompany && (
+        <div className="qbv-modal-overlay" onClick={() => setSelectedCompany(null)}>
+          <div className="qbv-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="qbv-modal-header">
+              <div>
+                <span className="qbv-card-label">Company details</span>
+                <h2>{selectedCompany.company}</h2>
+                <p>
+                  {selectedCompany.experiences.length} alumni experience
+                  {selectedCompany.experiences.length !== 1 ? "s" : ""} with{" "}
+                  {selectedCompany.questions.length} questions.
+                </p>
+              </div>
+              <button
+                className="qbv-modal-close"
+                onClick={() => setSelectedCompany(null)}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="qbv-modal-body">
+              {selectedCompany.experiences.map((experience) => (
+                <section className="qbv-experience" key={experience._id}>
+                  <div className="qbv-experience-head">
+                    <div className="qbv-avatar large">{getInitials(experience.name)}</div>
+                    <div>
+                      <h3>{experience.name}</h3>
+                      <p>{formatDate(experience.createdAt)}</p>
+                    </div>
+                    <a
+                      href={experience.linkedin}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="qbv-linkedin"
+                    >
+                      LinkedIn
+                    </a>
+                  </div>
+
+                  <div className="qbv-detail-section">
+                    <h4>Interview Questions</h4>
+                    <div className="qbv-detail-list">
+                      {(experience.questions || []).map((question, index) => (
+                        <div className="qbv-detail-item" key={`${experience._id}-q-${index}`}>
+                          <span>{index + 1}</span>
+                          <p>{question}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="qbv-detail-section tips">
+                    <h4>Tips and Context</h4>
+                    <div className="qbv-detail-list">
+                      {(experience.additionalInfo || []).map((tip, index) => (
+                        <div className="qbv-detail-item tip" key={`${experience._id}-t-${index}`}>
+                          <span>{index + 1}</span>
+                          <p>{tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <p className="qbv-footer">Contributed by alumni. Built for placement prep.</p>
     </div>
   );
 }

@@ -1,53 +1,56 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session on page load
-  // ✅ merged into one useEffect — two separate ones caused a race condition
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      fetch("http://localhost:5000/api/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.user) {
-            setUser(data.user);
-            localStorage.setItem("user", JSON.stringify(data.user)); // keep in sync
-          } else {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-          }
-        })
-        .catch(() => {
+
+    if (!token) {
+      localStorage.removeItem("user");
+      setLoading(false);
+      return;
+    }
+
+    fetch(`${API_URL}/api/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        const data = await res.json();
+
+        if (!res.ok || !data.user) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
-        })
-        .finally(() => setLoading(false));
-    } else {
-      // No token — try restoring from stored user (e.g. signup flow)
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-      setLoading(false);
-    }
+          setUser(null);
+          return;
+        }
+
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      })
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const login = async (email, password) => {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
+  const login = async (email, password, role) => {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, role }),
     });
     const data = await res.json();
 
-    if (!res.ok || !data.success) throw new Error(data.message || "Login failed");
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || "Login failed");
+    }
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
@@ -56,15 +59,18 @@ export function AuthProvider({ children }) {
   };
 
   const signup = async (formData) => {
-    const res = await fetch("http://localhost:5000/api/auth/signup", {
+    const res = await fetch(`${API_URL}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
     const result = await res.json();
-    if (!res.ok) throw new Error(result.message || "Signup failed");
 
-    localStorage.setItem("token", result.token); // ✅ store token on signup too
+    if (!res.ok) {
+      throw new Error(result.message || "Signup failed");
+    }
+
+    localStorage.setItem("token", result.token);
     localStorage.setItem("user", JSON.stringify(result.user));
     setUser(result.user);
     return result.user;
@@ -72,7 +78,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user"); // ✅ clear both on logout
+    localStorage.removeItem("user");
     setUser(null);
   };
 

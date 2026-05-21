@@ -45,7 +45,7 @@ function LoginForm({ onSwitch }) {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
     try {
-      await login(form.email, form.password);
+      await login(form.email, form.password, form.role);
       navigate("/");
     } catch (err) {
       setServerError(err.message);

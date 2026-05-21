@@ -52,9 +52,13 @@ export default function QuestionBank() {
     } else {
       setLoading(true);
       try {
+        const token = localStorage.getItem("token");
         const res = await fetch("http://localhost:5000/api/submissions", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ name, linkedin, email, company, questions, additionalInfo }),
         });
 

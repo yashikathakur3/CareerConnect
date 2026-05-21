@@ -101,7 +101,7 @@ async function signup(req, res) {
 // ✅ was missing entirely — caused the "not valid JSON" error
 async function login(req, res) {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -125,6 +125,13 @@ async function login(req, res) {
       return res.status(400).json({
         success: false,
         message: "Invalid email or password"
+      });
+    }
+
+    if (role && user.role !== role) {
+      return res.status(403).json({
+        success: false,
+        message: `This account is registered as ${user.role}. Please choose the correct login type.`
       });
     }
 

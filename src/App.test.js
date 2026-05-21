@@ -1,8 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
+import App from "./App";
+import { AuthProvider } from "./components/AuthContext";
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test("renders the Career Connect home page", () => {
+  render(
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+
+  expect(screen.getAllByText(/Career Connect/i).length).toBeGreaterThan(0);
 });
