@@ -204,12 +204,21 @@ export default function QuestionBankView() {
     s.questions.map((q) => ({ question: q, company: s.company.trim() }))
   );
 
+  // ✅ Remove duplicate questions (same text + same company)
+  const seen = new Set();
+  const uniqueQuestions = allQuestions.filter((item) => {
+    const key = `${item.company.toLowerCase()}||${item.question.toLowerCase().trim()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
   // Filter by company if search is active
   const filtered = search.trim()
-    ? allQuestions.filter((q) =>
-        q.company.toLowerCase().includes(search.trim().toLowerCase())
-      )
-    : allQuestions;
+    ? uniqueQuestions.filter((q) =>
+      q.company.toLowerCase().includes(search.trim().toLowerCase())
+    )
+    : uniqueQuestions;
 
   return (
     <div className="qbv-page">
